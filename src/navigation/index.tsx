@@ -1,11 +1,7 @@
 import { createStaticNavigation } from "@react-navigation/native"
 import type { StaticParamList } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import { Settings } from "./screens/Settings"
 import { Tuneo } from "./screens/Tuneo"
-import Colors from "@/Colors"
-import { CloseButton } from "@/components/CloseButton"
-import { Platform } from "react-native"
 
 const RootStack = createNativeStackNavigator({
   screens: {
@@ -14,18 +10,6 @@ const RootStack = createNativeStackNavigator({
       options: {
         headerShown: false,
       },
-    },
-    Settings: {
-      screen: Settings,
-      options: () => ({
-        headerTitleStyle: { color: Colors.primary },
-        headerStyle: { backgroundColor: Colors.bgTitle },
-        headerTintColor: Colors.primary,
-        headerShadowVisible: false,
-        ...(Platform.OS === "ios"
-          ? { presentation: "fullScreenModal", headerRight: () => <CloseButton /> }
-          : {}),
-      }),
     },
   },
 })

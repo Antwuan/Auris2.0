@@ -4,7 +4,6 @@ import { withTiming, withRepeat } from "react-native-reanimated"
 import { Rect, Line, LinearGradient, Group, vec, Points, Mask } from "@shopify/react-native-skia"
 import { useWindowDimensions } from "react-native"
 import Colors from "@/Colors"
-import { useConfigStore } from "@/stores/configStore"
 
 const GRID_COLOR = Colors.bgInactive
 const BACKGROUND_GRADIENT_START = Colors.bgActive
@@ -25,7 +24,6 @@ const MovingGrid = ({
   pointsPerSec: number
 }) => {
   const { width, height } = useWindowDimensions()
-  const graphics = useConfigStore((state) => state.graphics)
   const boxHeight = useMemo(() => height / 2, [height])
   const pointSpacing = useMemo(() => GRID_SPEED / pointsPerSec, [pointsPerSec])
   const maxHistory = useMemo(() => Math.floor(boxHeight / pointSpacing), [boxHeight, pointSpacing])
@@ -179,17 +177,7 @@ const MovingGrid = ({
           />
         }
       >
-        {graphics === "low" ? (
-          <Rect
-            x={pts[0]}
-            y={0}
-            width={width}
-            height={boxHeight}
-            style="fill"
-            color={Colors.primary}
-          />
-        ) : (
-          <>
+        <>
             <Rect x={pts[0]} y={0} width={pts[1]} height={boxHeight}>
               <LinearGradient
                 start={{ x: pts[0], y: 0 }}
@@ -219,7 +207,6 @@ const MovingGrid = ({
               />
             </Rect>
           </>
-        )}
       </Mask>
     </Group>
   )
