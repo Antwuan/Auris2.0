@@ -8,7 +8,7 @@ import { AudioModule } from "expo-audio"
 import Colors from "@/Colors"
 import { getTestSignal } from "@/test"
 import MovingGrid from "@/components/MovingGrid"
-import ConfigButton from "@/components/ConfigButton"
+
 import { useTranslation } from "@/configHooks"
 import { useConfigStore } from "@/stores/configStore"
 import { Chromatic, Guitar, Instrument } from "@/instruments"
@@ -236,9 +236,7 @@ export const Tuneo = () => {
   const movingGridH = height - movingGridY
   const stringsH = height - waveformY - waveformH - movingGridH - gaugeWidth / 2
 
-  // Config button
-  const cfgBtnSize = 1.5
-  const cfgBtnMargin = 50
+
 
   return micAccess === "granted" ? (
     <View style={{ flex: 1, backgroundColor: Colors.bgInactive }}>
@@ -278,11 +276,6 @@ export const Tuneo = () => {
       </Canvas>
       <Strings positionY={waveformY + waveformH} height={stringsH} instrument={instrument} />
       <RightButtons positionY={waveformY + waveformH} instrument={instrument} />
-      <ConfigButton
-        x={width - cfgBtnMargin * cfgBtnSize}
-        y={height - cfgBtnMargin * cfgBtnSize}
-        size={cfgBtnSize}
-      />
     </View>
   ) : micAccess === "denied" ? (
     <RequireMicAccess />

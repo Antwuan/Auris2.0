@@ -1,4 +1,4 @@
-import { TuningType } from "./configHooks"
+import { TuningType } from "./stores/configStore"
 
 const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"] as const
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -75,5 +75,7 @@ function getReferenceFrequency(tuning: TuningType): number {
       return 432
     case "ref_444":
       return 444
+    default:
+      return 440
   }
 }

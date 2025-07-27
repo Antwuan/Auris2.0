@@ -1,8 +1,8 @@
 import Colors from "@/Colors"
 import { Instrument } from "@/instruments"
 import { getTuningFreq, InstrumentType, TuningType, useConfigStore } from "@/stores/configStore"
-import { Feather, FontAwesome5, Ionicons } from "@expo/vector-icons"
-import { Linking, Platform, Pressable, Text, useWindowDimensions, View } from "react-native"
+import { FontAwesome5, Ionicons } from "@expo/vector-icons"
+import { Platform, Pressable, Text, useWindowDimensions, View } from "react-native"
 import { Picker } from "./Picker"
 import { MenuAction } from "@react-native-menu/menu"
 import { useMemo } from "react"
@@ -192,34 +192,7 @@ export const RightButtons = ({
         </View>
       </Picker>
 
-      <Pressable
-        onPress={async () => {
-          await Linking.openURL(`https://www.instagram.com/tuneo.app/`)
-        }}
-        style={{
-          marginLeft: btnSpacing,
-          width: btnW,
-          borderRadius: 10,
-          backgroundColor: Colors.bgActive,
-          borderColor: Colors.secondary,
-          borderWidth: btnBorder,
-          justifyContent: "center",
-          alignItems: "center",
-          paddingVertical: 10,
-          gap: 3,
-        }}
-      >
-        <Text
-          style={{
-            color: Colors.primary,
-            fontSize: fontSize * 0.8,
-            textAlign: "center",
-          }}
-        >
-          {t("feedback")}
-        </Text>
-        <Feather name="heart" size={fontHeight} color={Colors.primary} />
-      </Pressable>
+
     </View>
   )
 }
