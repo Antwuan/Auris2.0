@@ -1,12 +1,26 @@
 import { createStaticNavigation } from "@react-navigation/native"
 import type { StaticParamList } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import { Home } from "./screens/Home"
 import { Tuneo } from "./screens/Tuneo"
+import { Lessons } from "./screens/Lessons"
 
 const RootStack = createNativeStackNavigator({
   screens: {
+    Home: {
+      screen: Home,
+      options: {
+        headerShown: false,
+      },
+    },
     Tuneo: {
       screen: Tuneo,
+      options: {
+        headerShown: false,
+      },
+    },
+    Lessons: {
+      screen: Lessons,
       options: {
         headerShown: false,
       },

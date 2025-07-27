@@ -1,6 +1,8 @@
 import React, { Profiler, useEffect, useMemo, useState } from "react"
-import { View, useWindowDimensions, Alert } from "react-native"
+import { View, useWindowDimensions, Alert, Pressable } from "react-native"
 import { Canvas } from "@shopify/react-native-skia"
+import { useNavigation } from "@react-navigation/native"
+import { Ionicons } from "@expo/vector-icons"
 
 import DSPModule from "@/../specs/NativeDSPModule"
 import MicrophoneStreamModule, { AudioBuffer } from "@/../modules/microphone-stream"
@@ -41,6 +43,7 @@ type MicrophoneAccess = "pending" | "granted" | "denied"
 
 export const Tuneo = () => {
   const { width, height } = useWindowDimensions()
+  const navigation = useNavigation()
   const config = useConfigStore()
   const setManual = useConfigStore((state) => state.setManual)
   const t = useTranslation()
@@ -240,6 +243,25 @@ export const Tuneo = () => {
 
   return micAccess === "granted" ? (
     <View style={{ flex: 1, backgroundColor: Colors.bgInactive }}>
+      {/* Back Button */}
+      <Pressable
+        onPress={() => navigation.goBack()}
+        style={{
+          position: "absolute",
+          top: 50,
+          left: 20,
+          zIndex: 1000,
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Ionicons name="arrow-back" size={24} color={Colors.primary} />
+      </Pressable>
+      
       <Canvas style={{ flex: 1 }}>
         <Profiler id="Waveform" onRender={onRenderCallback}>
           <Waveform
