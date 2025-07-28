@@ -10,7 +10,7 @@ import { useConfigStore } from "./stores/configStore"
 export const useTranslation = () => {
   const t = useCallback(
     (key: keyof Translation) => {
-      return en[key]
+          return en[key]
     },
     []
   )

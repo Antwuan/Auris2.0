@@ -22,7 +22,7 @@ export function Home() {
         break
       case "metronome":
         // TODO: Navigate to metronome screen
-        console.log("Metronome coming soon!")
+        // Metronome functionality coming soon
         break
       case "lessons":
         navigation.navigate("Lessons" as never)

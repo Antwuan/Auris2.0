@@ -177,7 +177,7 @@ const MovingGrid = ({
           />
         }
       >
-        <>
+          <>
             <Rect x={pts[0]} y={0} width={pts[1]} height={boxHeight}>
               <LinearGradient
                 start={{ x: pts[0], y: 0 }}
