@@ -8,6 +8,7 @@ public class MicrophoneStreamModule: Module {
   private let audioSession = AVAudioSession.sharedInstance()
   private let audioEngine = AVAudioEngine()
   private var audioBufferHandler: (([Float]) -> Void)?
+  private var isRecording = false
 
   // Each module class must implement the definition function. The definition consists of components
   // that describes the module's functionality and behavior.
@@ -26,7 +27,10 @@ public class MicrophoneStreamModule: Module {
     ])
 
     Function("startRecording") {
-      // audioBufferHandler = handler
+      if self.isRecording {
+        print("Recording already in progress")
+        return
+      }
 
       // Request microphone permission
       self.audioSession.requestRecordPermission { granted in
@@ -55,8 +59,11 @@ public class MicrophoneStreamModule: Module {
                   }
 
                   try self.audioEngine.start()
+                  self.isRecording = true
+                  print("Audio recording started successfully")
               } catch {
                   print("Error configuring audio engine: \(error.localizedDescription)")
+                  self.isRecording = false
               }
           }
       }
@@ -73,9 +80,21 @@ public class MicrophoneStreamModule: Module {
   }
 
   private func stopRecording() {
-    audioEngine.inputNode.removeTap(onBus: 0)
-    audioEngine.stop()
-    try? AVAudioSession.sharedInstance().setActive(false)
-    audioBufferHandler = nil
+    guard isRecording else {
+      print("No recording in progress")
+      return
+    }
+    
+    isRecording = false
+    
+    do {
+      audioEngine.inputNode.removeTap(onBus: 0)
+      audioEngine.stop()
+      try AVAudioSession.sharedInstance().setActive(false)
+      audioBufferHandler = nil
+      print("Audio recording stopped successfully")
+    } catch {
+      print("Error stopping audio recording: \(error.localizedDescription)")
+    }
   }
 }

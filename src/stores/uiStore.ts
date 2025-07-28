@@ -12,6 +12,7 @@ interface uiState {
   addString: (string?: InstrumentString) => void
   currentString?: InstrumentString
   setCurrentString: (string?: InstrumentString) => void
+  cleanup: () => void
 }
 
 const PITCH_HISTORY = 3
@@ -46,4 +47,13 @@ export const useUiStore = create<uiState>()((set, get) => ({
   },
   currentString: undefined,
   setCurrentString: (currentString) => set({ currentString }),
+  cleanup: () => {
+    set({
+      pitchHistory: new Array(PITCH_HISTORY).fill(-1),
+      rmsHistory: new Array(RMS_HISTORY).fill(0),
+      idHistory: new Array(ID_HISTORY).fill(0),
+      stringHistory: new Array<InstrumentString | undefined>(STRING_HISTORY).fill(undefined),
+      currentString: undefined,
+    })
+  },
 }))

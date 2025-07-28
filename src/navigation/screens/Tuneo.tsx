@@ -1,4 +1,4 @@
-import React, { Profiler, useEffect, useMemo, useState } from "react"
+import React, { Profiler, useEffect, useMemo, useState, useRef, useCallback } from "react"
 import { View, useWindowDimensions, Alert, Pressable } from "react-native"
 import { Canvas } from "@shopify/react-native-skia"
 import { useNavigation } from "@react-navigation/native"
@@ -22,6 +22,7 @@ import RequireMicAccess from "@/components/RequireMicAccess"
 import { useUiStore } from "@/stores/uiStore"
 import { getRelativeDiff, sameNote } from "@/notes"
 import { RightButtons } from "@/components/RightButtons"
+import { TuningSelector } from "@/components/TuningSelector"
 
 const TEST_MODE = false
 
@@ -39,6 +40,39 @@ const ENABLE_FILTER = true
 const BUF_PER_SEC = MicrophoneStreamModule.BUF_PER_SEC
 console.log(`Preferred buffers per second: ${BUF_PER_SEC}`)
 
+// Circular buffer implementation to prevent memory leaks
+class CircularBuffer {
+  private buffer: number[]
+  private head: number = 0
+  private size: number
+
+  constructor(size: number) {
+    this.size = size
+    this.buffer = new Array(size).fill(0)
+  }
+
+  push(samples: number[]) {
+    const len = samples.length
+    for (let i = 0; i < len; i++) {
+      this.buffer[this.head] = samples[i]
+      this.head = (this.head + 1) % this.size
+    }
+  }
+
+  getBuffer(): number[] {
+    const result = new Array(this.size)
+    for (let i = 0; i < this.size; i++) {
+      result[i] = this.buffer[(this.head + i) % this.size]
+    }
+    return result
+  }
+
+  clear() {
+    this.buffer.fill(0)
+    this.head = 0
+  }
+}
+
 type MicrophoneAccess = "pending" | "granted" | "denied"
 
 export const Tuneo = () => {
@@ -48,9 +82,9 @@ export const Tuneo = () => {
   const setManual = useConfigStore((state) => state.setManual)
   const t = useTranslation()
 
-  // Audio buffer
+  // Audio buffer using circular buffer to prevent memory leaks
   const [sampleRate, setSampleRate] = useState(0)
-  const [audioBuffer, setAudioBuffer] = useState<number[]>(() => new Array(BUF_SIZE).fill(0))
+  const circularBufferRef = useRef<CircularBuffer>(new CircularBuffer(BUF_SIZE))
   const [bufferId, setBufferId] = useState(0)
 
   // Flag for microphone access granted
@@ -72,6 +106,16 @@ export const Tuneo = () => {
   const addString = useUiStore((state) => state.addString)
   const currentString = useUiStore((state) => state.currentString)
   const setCurrentString = useUiStore((state) => state.setCurrentString)
+  const cleanup = useUiStore((state) => state.cleanup)
+
+  // Cleanup function for microphone
+  const cleanupMicrophone = useCallback(() => {
+    try {
+      MicrophoneStreamModule.stopRecording()
+    } catch (error) {
+      console.warn("Error stopping microphone:", error)
+    }
+  }, [])
 
   // Request recording permission
   useEffect(() => {
@@ -95,28 +139,41 @@ export const Tuneo = () => {
   useEffect(() => {
     if (TEST_MODE || micAccess !== "granted") return
 
-    // Start microphone
-    MicrophoneStreamModule.startRecording()
-    console.log("Start recording")
+    let subscriber: any = null
 
-    // Suscribe to microphone buffer
-    const subscriber = MicrophoneStreamModule.addListener(
-      "onAudioBuffer",
-      (buffer: AudioBuffer) => {
-        // Append new audio samples to the end of the buffer
-        const len = buffer.samples.length
-        setAudioBuffer((prevBuffer) => [...prevBuffer.slice(len), ...buffer.samples])
+    try {
+      // Start microphone
+      MicrophoneStreamModule.startRecording()
+      console.log("Start recording")
 
-        // Calculate signal RMS
-        addRMS(DSPModule.rms(buffer.samples))
-        setBufferId((prevId) => prevId + 1)
-      }
-    )
-    return () => {
-      subscriber.remove()
-      MicrophoneStreamModule.stopRecording()
+      // Subscribe to microphone buffer
+      subscriber = MicrophoneStreamModule.addListener(
+        "onAudioBuffer",
+        (buffer: AudioBuffer) => {
+          // Use circular buffer to prevent memory leaks
+          circularBufferRef.current.push(buffer.samples)
+
+          // Calculate signal RMS
+          addRMS(DSPModule.rms(buffer.samples))
+          setBufferId((prevId) => prevId + 1)
+        }
+      )
+    } catch (error) {
+      console.error("Error starting microphone:", error)
+      setMicAccess("denied")
     }
-  }, [micAccess, addRMS])
+
+    return () => {
+      if (subscriber) {
+        try {
+          subscriber.remove()
+        } catch (error) {
+          console.warn("Error removing subscriber:", error)
+        }
+      }
+      cleanupMicrophone()
+    }
+  }, [micAccess, addRMS, cleanupMicrophone])
 
   // Test audio buffers
   useEffect(() => {
@@ -126,7 +183,8 @@ export const Tuneo = () => {
     const bufSize = sampleRate / BUF_PER_SEC
     const buffer = getTestSignal(bufferId, sampleRate, bufSize)
     setSampleRate(sampleRate)
-    setAudioBuffer(buffer)
+    circularBufferRef.current.clear()
+    circularBufferRef.current.push(buffer)
 
     // Trigger for next buffer
     const timeout = setTimeout(() => {
@@ -137,7 +195,7 @@ export const Tuneo = () => {
 
   // Get pitch of the audio
   useEffect(() => {
-    if (!audioBuffer.length || micAccess !== "granted") return
+    if (micAccess !== "granted") return
 
     // Process each bufferId only once
     if (bufferId === idQ[idQ.length - 1]) return
@@ -174,6 +232,9 @@ export const Tuneo = () => {
       threshold = THRESHOLD_NOISY
     }
 
+    // Get current audio buffer from circular buffer
+    const audioBuffer = circularBufferRef.current.getBuffer()
+
     // Estimate pitch
     const pitch = DSPModule.pitch(audioBuffer, sr, minFreq, maxFreq, threshold)
     // console.log(`Pitch: ${pitch.toFixed(1)}Hz  [${minFreq.toFixed(1)}Hz-${maxFreq.toFixed(1)}Hz]`)
@@ -181,17 +242,17 @@ export const Tuneo = () => {
 
     // Add values to history
     addPitch(pitch)
-  }, [audioBuffer, sampleRate, micAccess, addId, addPitch, rmsQ, pitchQ, idQ, bufferId])
+  }, [bufferId, sampleRate, micAccess, addId, addPitch, rmsQ, pitchQ, idQ])
 
   // Selected instrument
   const instrument: Instrument = useMemo(() => {
     switch (config.instrument) {
       case "guitar":
-        return new Guitar(config.tuning)
+        return new Guitar(config.tuning, config.guitarTuning)
       case "chromatic":
         return new Chromatic(config.tuning)
     }
-  }, [config.instrument, config.tuning])
+  }, [config.instrument, config.tuning, config.guitarTuning])
 
   // Disable manual mode if instrument doesn't support strings
   useEffect(() => {
@@ -239,7 +300,14 @@ export const Tuneo = () => {
   const movingGridH = height - movingGridY
   const stringsH = height - waveformY - waveformH - movingGridH - gaugeWidth / 2
 
-
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupMicrophone()
+      circularBufferRef.current.clear()
+      cleanup()
+    }
+  }, [cleanupMicrophone, cleanup])
 
   return micAccess === "granted" ? (
     <View style={{ flex: 1, backgroundColor: Colors.bgInactive }}>
@@ -265,7 +333,7 @@ export const Tuneo = () => {
       <Canvas style={{ flex: 1 }}>
         <Profiler id="Waveform" onRender={onRenderCallback}>
           <Waveform
-            audioBuffer={audioBuffer}
+            audioBuffer={circularBufferRef.current.getBuffer()}
             positionY={waveformY}
             height={waveformH}
             bufferId={bufferId}
@@ -298,6 +366,7 @@ export const Tuneo = () => {
       </Canvas>
       <Strings positionY={waveformY + waveformH} height={stringsH} instrument={instrument} />
       <RightButtons positionY={waveformY + waveformH} instrument={instrument} />
+      <TuningSelector positionY={waveformY + waveformH} height={stringsH} />
     </View>
   ) : micAccess === "denied" ? (
     <RequireMicAccess />

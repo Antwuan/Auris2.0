@@ -12,6 +12,7 @@ export interface Translation {
   tuning_444: string
   error_mic_access: string
   configure_permissions: string
+  select_tuning: string
 }
 
 export const en: Translation = {
@@ -28,6 +29,7 @@ export const en: Translation = {
   tuning_444: "444Hz (high pitch)",
   error_mic_access: "Tuneo requires microphone permissions to hear your guitar.",
   configure_permissions: "Configure permissions",
+  select_tuning: "Select Tuning",
 }
 
 export const es: Translation = {
@@ -44,4 +46,5 @@ export const es: Translation = {
   tuning_444: "444Hz (tono alto)",
   error_mic_access: "Tuneo necesita permiso de micrófono para escuchar la guitarra.",
   configure_permissions: "Configurar permisos",
+  select_tuning: "Seleccionar Afinación",
 }
