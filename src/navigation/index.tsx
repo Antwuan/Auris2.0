@@ -4,6 +4,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { Home } from "./screens/Home"
 import { Tuneo } from "./screens/Tuneo"
 import { Lessons } from "./screens/Lessons"
+import NoteRecognitionScreen from "./screens/NoteRecognition"
+import IntervalTrainingScreen from "./screens/IntervalTraining"
 
 const RootStack = createNativeStackNavigator({
   screens: {
@@ -21,6 +23,18 @@ const RootStack = createNativeStackNavigator({
     },
     Lessons: {
       screen: Lessons,
+      options: {
+        headerShown: false,
+      },
+    },
+    NoteRecognition: {
+      screen: NoteRecognitionScreen,
+      options: {
+        headerShown: false,
+      },
+    },
+    IntervalTraining: {
+      screen: IntervalTrainingScreen,
       options: {
         headerShown: false,
       },

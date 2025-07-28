@@ -8,13 +8,11 @@ export function Lessons() {
   const navigation = useNavigation()
 
   const handleNoteRecognitionPress = () => {
-    // TODO: Navigate to Note Recognition lesson
-    console.log("Note Recognition coming soon!")
+    navigation.navigate("NoteRecognition" as never)
   }
 
   const handleIntervalTrainingPress = () => {
-    // TODO: Navigate to Interval Ear Training lesson
-    console.log("Interval Ear Training coming soon!")
+    navigation.navigate("IntervalTraining" as never)
   }
 
   const handleBackPress = () => {
