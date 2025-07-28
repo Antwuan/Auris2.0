@@ -1,5 +1,5 @@
 import { getFreqFromNote, getNoteFromFreq, Note } from "./notes"
-import { InstrumentType, TuningType } from "./stores/configStore"
+import { InstrumentType, TuningType, GuitarTuningType, GUITAR_TUNINGS, parseGuitarTuning } from "./stores/configStore"
 
 export type InstrumentString = { note: Note; freq: number }
 
@@ -32,19 +32,31 @@ export abstract class Instrument {
 }
 
 export class Guitar extends Instrument {
-  stringNotes: Note[] = [
-    { name: "E", octave: 2 },
-    { name: "A", octave: 2 },
-    { name: "D", octave: 3 },
-    { name: "G", octave: 3 },
-    { name: "B", octave: 3 },
-    { name: "E", octave: 4 },
-  ]
-  stringFreqs: number[] // depends on tuning type
+  guitarTuning: GuitarTuningType
+  stringNotes: Note[] = []
+  stringFreqs: number[] = []
 
-  constructor(tuning: TuningType) {
+  constructor(tuning: TuningType, guitarTuning: GuitarTuningType = "standard") {
     super(tuning)
-    this.stringFreqs = this.stringNotes.map((note) => getFreqFromNote(note, tuning))
+    this.guitarTuning = guitarTuning
+    this.updateStrings()
+  }
+
+  updateStrings() {
+    const tuningString = GUITAR_TUNINGS[this.guitarTuning]
+    const parsedNotes = parseGuitarTuning(tuningString)
+    
+    this.stringNotes = parsedNotes.map(note => ({
+      name: note.name as Note["name"],
+      octave: note.octave as Note["octave"]
+    }))
+    
+    this.stringFreqs = this.stringNotes.map((note) => getFreqFromNote(note, this.tuning))
+  }
+
+  setGuitarTuning(guitarTuning: GuitarTuningType) {
+    this.guitarTuning = guitarTuning
+    this.updateStrings()
   }
 
   get name(): InstrumentType {

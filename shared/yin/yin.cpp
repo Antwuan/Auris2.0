@@ -9,7 +9,12 @@ using namespace facebook;
 Yin::Yin(float sampleRate, int bufferSize)
     : sampleRate(sampleRate),
       bufferSize(bufferSize),
-      buffer(bufferSize, 0.0f) {}
+      buffer(bufferSize, 0.0f) {
+  // Validate parameters
+  if (sampleRate <= 0 || bufferSize <= 0) {
+    throw std::invalid_argument("Invalid sample rate or buffer size");
+  }
+}
 
 int Yin::getBufferSize() { return bufferSize; }
 
@@ -22,7 +27,7 @@ float Yin::parabolaInterp(int n, float yl, float yc, float yr) {
   float nom = -4 * n * yc + (2 * n - 1) * yr + (2 * n + 1) * yl;
   float denom = 2 * (yl - 2 * yc + yr);
   // Aligned points
-  if (denom == 0) {
+  if (std::abs(denom) < 1e-10) {
     return n;
   }
   float nBetter = nom / denom;
@@ -35,11 +40,33 @@ float Yin::parabolaInterp(int n, float yl, float yc, float yr) {
 
 float Yin::getPitch(const std::vector<float>& audioBuffer, jsi::Runtime& rt,
                     float minFreq, float maxFreq, float threshold) {
+  // Validate input parameters
+  if (audioBuffer.empty() || minFreq <= 0 || maxFreq <= 0 || threshold <= 0) {
+    return -1.0f;
+  }
+
+  if (minFreq >= maxFreq) {
+    return -1.0f;
+  }
+
   int tau;
   int tauMin = static_cast<int>(sampleRate / maxFreq);
   int tauMax = static_cast<int>(sampleRate / minFreq);
-  if (tauMax >= bufferSize) return -1.0;  // Ensure tauMax is within valid range
+  
+  // Ensure tauMax is within valid range
+  if (tauMax >= bufferSize) {
+    return -1.0f;
+  }
 
+  // Ensure tauMin is valid
+  if (tauMin < 0) {
+    tauMin = 0;
+  }
+
+  // Clear buffer for this calculation
+  std::fill(buffer.begin(), buffer.end(), 0.0f);
+
+  // Calculate difference function
   for (tau = tauMin; tau < tauMax; tau++) {
     float sum = 0.0;
     for (int j = 0; j < bufferSize - tau; j++) {
@@ -53,7 +80,11 @@ float Yin::getPitch(const std::vector<float>& audioBuffer, jsi::Runtime& rt,
   float acc = 0;  // running sum
   for (tau = tauMin; tau < tauMax; tau++) {
     acc += buffer[tau];
-    buffer[tau] = buffer[tau] * (tau + 1 - tauMin) / acc;
+    if (acc > 0) {
+      buffer[tau] = buffer[tau] * (tau + 1 - tauMin) / acc;
+    } else {
+      buffer[tau] = 1.0f; // Avoid division by zero
+    }
   }
 
   // Find first valley below threshold
