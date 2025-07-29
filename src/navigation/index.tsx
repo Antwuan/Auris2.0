@@ -6,7 +6,7 @@ import { Tuneo } from "./screens/Tuneo"
 import { MusicTheory } from "./screens/MusicTheory"
 import { ChordCompass } from "./screens/ChordCompass"
 import { CircleOfFifths } from "./screens/CircleOfFifths"
-import { ChordProgressions } from "./screens/ChordProgressions"
+
 import IntervalTraining from "./screens/IntervalTraining"
 import NoteRecognition from "./screens/NoteRecognition"
 import { Lessons } from "./screens/Lessons"
@@ -40,7 +40,7 @@ export const RootStack = () => {
           <Stack.Screen name="MusicTheory" component={MusicTheory} />
           <Stack.Screen name="ChordCompass" component={ChordCompass} />
           <Stack.Screen name="CircleOfFifths" component={CircleOfFifths} />
-          <Stack.Screen name="ChordProgressions" component={ChordProgressions} />
+  
           <Stack.Screen name="IntervalTraining" component={IntervalTraining} />
           <Stack.Screen name="NoteRecognition" component={NoteRecognition} />
           <Stack.Screen name="Lessons" component={Lessons} />

@@ -15,9 +15,7 @@ export const MusicTheory: React.FC = () => {
     navigation.navigate("CircleOfFifths" as never)
   }
 
-  const handleOpenChordProgressions = () => {
-    navigation.navigate("ChordProgressions" as never)
-  }
+
 
   const handleBackPress = () => {
     navigation.goBack()
@@ -81,26 +79,7 @@ export const MusicTheory: React.FC = () => {
             </View>
           </Pressable>
 
-          {/* Chord Progressions Card */}
-          <Pressable
-            style={styles.card}
-            onPress={handleOpenChordProgressions}
-          >
-            <View style={styles.cardContent}>
-              <View style={styles.cardIcon}>
-                <Ionicons name="musical-notes" size={24} color={Colors.primary} />
-              </View>
-              <View style={styles.cardText}>
-                <Text style={styles.cardTitle}>Chord Progressions</Text>
-                <Text style={styles.cardDescription}>
-                  Explore and practice common chord progressions
-                </Text>
-              </View>
-              <View style={styles.cardArrow}>
-                <Ionicons name="chevron-forward" size={24} color={Colors.secondary} />
-              </View>
-            </View>
-          </Pressable>
+
         </View>
       </ScrollView>
     </View>
