@@ -1,54 +1,51 @@
-import { createStaticNavigation } from "@react-navigation/native"
-import type { StaticParamList } from "@react-navigation/native"
+import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { Home } from "./screens/Home"
 import { Tuneo } from "./screens/Tuneo"
+import { MusicTheory } from "./screens/MusicTheory"
+import { ChordCompass } from "./screens/ChordCompass"
+import { CircleOfFifths } from "./screens/CircleOfFifths"
+import { ChordProgressions } from "./screens/ChordProgressions"
+import IntervalTraining from "./screens/IntervalTraining"
+import NoteRecognition from "./screens/NoteRecognition"
 import { Lessons } from "./screens/Lessons"
-import NoteRecognitionScreen from "./screens/NoteRecognition"
-import IntervalTrainingScreen from "./screens/IntervalTraining"
 
-const RootStack = createNativeStackNavigator({
-  screens: {
-    Home: {
-      screen: Home,
-      options: {
-        headerShown: false,
-      },
-    },
-    Tuneo: {
-      screen: Tuneo,
-      options: {
-        headerShown: false,
-      },
-    },
-    Lessons: {
-      screen: Lessons,
-      options: {
-        headerShown: false,
-      },
-    },
-    NoteRecognition: {
-      screen: NoteRecognitionScreen,
-      options: {
-        headerShown: false,
-      },
-    },
-    IntervalTraining: {
-      screen: IntervalTrainingScreen,
-      options: {
-        headerShown: false,
-      },
-    },
-  },
-})
+export type RootStackParamList = {
+  Home: undefined
+  Tuneo: undefined
+  MusicTheory: undefined
+  ChordCompass: undefined
+  CircleOfFifths: undefined
+  ChordProgressions: undefined
+  IntervalTraining: undefined
+  NoteRecognition: undefined
+  Lessons: undefined
+}
 
-export const Navigation = createStaticNavigation(RootStack)
+const Stack = createNativeStackNavigator<RootStackParamList>()
 
-type RootStackParamList = StaticParamList<typeof RootStack>
-
-declare global {
-  namespace ReactNavigation {
-    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-    interface RootParamList extends RootStackParamList {}
-  }
+export const RootStack = () => {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Home"
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="Home" component={Home} />
+          <Stack.Screen name="Tuneo" component={Tuneo} />
+          <Stack.Screen name="MusicTheory" component={MusicTheory} />
+          <Stack.Screen name="ChordCompass" component={ChordCompass} />
+          <Stack.Screen name="CircleOfFifths" component={CircleOfFifths} />
+          <Stack.Screen name="ChordProgressions" component={ChordProgressions} />
+          <Stack.Screen name="IntervalTraining" component={IntervalTraining} />
+          <Stack.Screen name="NoteRecognition" component={NoteRecognition} />
+          <Stack.Screen name="Lessons" component={Lessons} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </GestureHandlerRootView>
+  )
 }
