@@ -8,9 +8,12 @@ export function Home() {
   const navigation = useNavigation()
   const [activeTab, setActiveTab] = useState("home")
   const [activeSection, setActiveSection] = useState<string | null>(null)
+  const [tappedTab, setTappedTab] = useState<string | null>(null)
 
   const handleTabPress = (tabName: string) => {
-    setActiveTab(tabName)
+    // Show temporary highlight when tapped
+    setTappedTab(tabName)
+    setTimeout(() => setTappedTab(null), 200) // Remove highlight after 200ms
     
     // Handle navigation for different tabs
     switch (tabName) {
@@ -98,9 +101,9 @@ export function Home() {
                 </View>
                 
                 <View style={styles.basicItem}>
-                  <Text style={styles.basicTitle}>Time Signatures</Text>
+                  <Text style={styles.basicTitle}>Chord Progressions</Text>
                   <Text style={styles.basicDescription}>
-                    Indicates how many beats are in each measure and which note value constitutes one beat.
+                    A series of chords played in sequence that create the harmonic foundation of a song. Common progressions include I-IV-V, I-V-vi-IV, and ii-V-I.
                   </Text>
                 </View>
               </View>
@@ -180,57 +183,57 @@ export function Home() {
       {/* Floating Navigation Bar */}
       <View style={styles.floatingNav}>
         <Pressable
-          style={[styles.navItem, activeTab === "home" && styles.navItemActive]}
+          style={[styles.navItem, tappedTab === "home" && styles.navItemActive]}
           onPress={() => handleTabPress("home")}
         >
           <Ionicons 
             name="home" 
             size={24} 
-            color={activeTab === "home" ? Colors.primary : Colors.secondary} 
+            color={tappedTab === "home" ? Colors.primary : Colors.secondary} 
           />
-          <Text style={[styles.navLabel, activeTab === "home" && styles.navLabelActive]}>
+          <Text style={[styles.navLabel, tappedTab === "home" && styles.navLabelActive]}>
             Home
           </Text>
         </Pressable>
         
         <Pressable
-          style={[styles.navItem, activeTab === "tonusVivo" && styles.navItemActive]}
+          style={[styles.navItem, tappedTab === "tonusVivo" && styles.navItemActive]}
           onPress={() => handleTabPress("tonusVivo")}
         >
           <Ionicons 
             name="musical-note" 
             size={24} 
-            color={activeTab === "tonusVivo" ? Colors.primary : Colors.secondary} 
+            color={tappedTab === "tonusVivo" ? Colors.primary : Colors.secondary} 
           />
-          <Text style={[styles.navLabel, activeTab === "tonusVivo" && styles.navLabelActive]}>
+          <Text style={[styles.navLabel, tappedTab === "tonusVivo" && styles.navLabelActive]}>
             Tonus Vivo
           </Text>
         </Pressable>
         
         <Pressable
-          style={[styles.navItem, activeTab === "chords" && styles.navItemActive]}
+          style={[styles.navItem, tappedTab === "chords" && styles.navItemActive]}
           onPress={() => handleTabPress("chords")}
         >
           <Ionicons 
             name="compass" 
             size={24} 
-            color={activeTab === "chords" ? Colors.primary : Colors.secondary} 
+            color={tappedTab === "chords" ? Colors.primary : Colors.secondary} 
           />
-          <Text style={[styles.navLabel, activeTab === "chords" && styles.navLabelActive]}>
+          <Text style={[styles.navLabel, tappedTab === "chords" && styles.navLabelActive]}>
             Chords
           </Text>
         </Pressable>
         
         <Pressable
-          style={[styles.navItem, activeTab === "lessons" && styles.navItemActive]}
+          style={[styles.navItem, tappedTab === "lessons" && styles.navItemActive]}
           onPress={() => handleTabPress("lessons")}
         >
           <Ionicons 
             name="school" 
             size={24} 
-            color={activeTab === "lessons" ? Colors.primary : Colors.secondary} 
+            color={tappedTab === "lessons" ? Colors.primary : Colors.secondary} 
           />
-          <Text style={[styles.navLabel, activeTab === "lessons" && styles.navLabelActive]}>
+          <Text style={[styles.navLabel, tappedTab === "lessons" && styles.navLabelActive]}>
             Lessons
           </Text>
         </Pressable>

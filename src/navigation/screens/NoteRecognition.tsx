@@ -27,6 +27,7 @@ const NoteRecognitionScreen = () => {
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [disableButtons, setDisableButtons] = useState(false);
   const [score, setScore] = useState({ correct: 0, total: 0 });
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
 
   // Play a note
   const playNote = async (note: string) => {
@@ -47,6 +48,7 @@ const NoteRecognitionScreen = () => {
     setShowAnswer(false);
     setFeedback('');
     setDisableButtons(false);
+    setSelectedAnswer(null);
     // Play the question note automatically
     setTimeout(() => playNote(random), 300);
   };
@@ -57,9 +59,15 @@ const NoteRecognitionScreen = () => {
     // eslint-disable-next-line
   }, []);
 
-  const handleAnswer = (noteLetter: string) => {
+  const handleAnswerSelect = (noteLetter: string) => {
+    setSelectedAnswer(noteLetter);
+  };
+
+  const handleSubmitAnswer = () => {
+    if (selectedAnswer === null) return;
+    
     setDisableButtons(true);
-    const isCorrect = getNoteLetter(questionNote) === noteLetter;
+    const isCorrect = getNoteLetter(questionNote) === selectedAnswer;
     setScore(prev => ({
       correct: prev.correct + (isCorrect ? 1 : 0),
       total: prev.total + 1,
@@ -120,14 +128,38 @@ const NoteRecognitionScreen = () => {
         {NOTE_NAMES.map((note, i) => (
           <TouchableOpacity
             key={note}
-            style={styles.gridBtn}
-            onPress={() => handleAnswer(note)}
+            style={[
+              styles.gridBtn,
+              selectedAnswer === note && styles.selectedGridBtn
+            ]}
+            onPress={() => handleAnswerSelect(note)}
             disabled={disableButtons}
           >
-            <Text style={styles.gridBtnText}>{note}</Text>
+            <Text style={[
+              styles.gridBtnText,
+              selectedAnswer === note && styles.selectedGridBtnText
+            ]}>{note}</Text>
           </TouchableOpacity>
         ))}
       </View>
+      
+      {/* Submit Button */}
+      <TouchableOpacity
+        style={[
+          styles.submitButton,
+          (!selectedAnswer || disableButtons) && styles.submitButtonDisabled
+        ]}
+        onPress={handleSubmitAnswer}
+        disabled={!selectedAnswer || disableButtons}
+      >
+        <Text style={[
+          styles.submitButtonText,
+          (!selectedAnswer || disableButtons) && styles.submitButtonTextDisabled
+        ]}>
+          Submit Answer
+        </Text>
+      </TouchableOpacity>
+      
       {/* Feedback */}
       {!!feedback && <Text style={styles.feedback}>{feedback}</Text>}
     </View>
@@ -223,6 +255,33 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: Colors.primary,
     fontWeight: '500',
+  },
+  selectedGridBtn: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  selectedGridBtnText: {
+    color: Colors.bgInactive,
+  },
+  submitButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 20,
+    alignItems: 'center',
+    elevation: 2,
+  },
+  submitButtonDisabled: {
+    backgroundColor: Colors.secondary,
+    opacity: 0.5,
+  },
+  submitButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.bgInactive,
+  },
+  submitButtonTextDisabled: {
+    color: Colors.bgActive,
   },
   feedback: {
     textAlign: 'center',
