@@ -73,7 +73,72 @@ const CHORD_FORMULAS = {
     name: "Minor", 
     intervals: [0, 3, 7], // Root, Minor 3rd, Perfect 5th
     color: "#2196F3"
+  },
+  diminished: {
+    name: "Diminished",
+    intervals: [0, 3, 6], // Root, Minor 3rd, Diminished 5th
+    color: "#FF5722"
+  },
+  augmented: {
+    name: "Augmented",
+    intervals: [0, 4, 8], // Root, Major 3rd, Augmented 5th
+    color: "#9C27B0"
+  },
+  dominant7: {
+    name: "Dominant 7th",
+    intervals: [0, 4, 7, 10], // Root, Major 3rd, Perfect 5th, Minor 7th
+    color: "#FF9800"
+  },
+  minor7: {
+    name: "Minor 7th",
+    intervals: [0, 3, 7, 10], // Root, Minor 3rd, Perfect 5th, Minor 7th
+    color: "#4CAF50"
+  },
+  augmented7: {
+    name: "Augmented 7th",
+    intervals: [0, 4, 8, 10], // Root, Major 3rd, Augmented 5th, Minor 7th
+    color: "#E91E63"
+  },
+  halfDiminished7: {
+    name: "Half Diminished 7th",
+    intervals: [0, 3, 6, 10], // Root, Minor 3rd, Diminished 5th, Minor 7th
+    color: "#795548"
+  },
+  diminished7: {
+    name: "Diminished 7th",
+    intervals: [0, 3, 6, 9], // Root, Minor 3rd, Diminished 5th, Diminished 7th
+    color: "#607D8B"
+  },
+  major7: {
+    name: "Major 7th",
+    intervals: [0, 4, 7, 11], // Root, Major 3rd, Perfect 5th, Major 7th
+    color: "#3F51B5"
+  },
+  suspended2: {
+    name: "Suspended 2nd",
+    intervals: [0, 2, 7], // Root, Major 2nd, Perfect 5th
+    color: "#009688"
+  },
+  suspended4: {
+    name: "Suspended 4th",
+    intervals: [0, 5, 7], // Root, Perfect 4th, Perfect 5th
+    color: "#8BC34A"
   }
+}
+
+// Interval colors
+const INTERVAL_COLORS = {
+  root: "#333", // Black for root
+  majorSecond: "#666", // Gray for major 2nd
+  minorThird: "#2196F3", // Blue for minor 3rd (flat)
+  majorThird: "#666", // Gray for major 3rd
+  perfectFourth: "#666", // Gray for perfect 4th
+  perfectFifth: "#666", // Gray for perfect 5th
+  diminishedFifth: "#2196F3", // Blue for diminished 5th (flat)
+  augmentedFifth: "#FF0000", // Red for augmented 5th (sharp)
+  diminishedSeventh: "#2196F3", // Blue for diminished 7th (flat)
+  minorSeventh: "#2196F3", // Blue for minor 7th (flat)
+  majorSeventh: "#666", // Gray for major 7th
 }
 
 // Note names for all 12 semitones
@@ -83,6 +148,8 @@ export const ChordCompass: React.FC = () => {
   const navigation = useNavigation()
   const [selectedChord, setSelectedChord] = useState<keyof typeof CHORD_FORMULAS>("major")
   const [selectedKey, setSelectedKey] = useState("C")
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [dropdownSelection, setDropdownSelection] = useState<keyof typeof CHORD_FORMULAS | null>(null)
   const pianoOffset = useRef(new Animated.Value(0)).current
 
   // Find C3 (the C note closest to center of piano)
@@ -123,11 +190,9 @@ export const ChordCompass: React.FC = () => {
     // Root is always at center
     const rootPosition = leftEdge + keyCenter - 17.5
     
-    // 3rd and 5th are fixed intervals from root
-    // Major: Root (0), Major 3rd (4 semitones), Perfect 5th (7 semitones)
-    // Minor: Root (0), Minor 3rd (3 semitones), Perfect 5th (7 semitones)
-    const thirdInterval = selectedChord === "minor" ? 3 : 4
-    const fifthInterval = 7
+    // Get intervals for the selected chord
+    const chordData = CHORD_FORMULAS[selectedChord]
+    const intervals = chordData.intervals
     
     // Calculate actual spacing accounting for B->C and E->F transitions
     const calculateSpacing = (semitones: number) => {
@@ -146,10 +211,12 @@ export const ChordCompass: React.FC = () => {
       return spacing
     }
     
-    const thirdPosition = leftEdge + calculateSpacing(thirdInterval) + keyCenter - 17.5
-    const fifthPosition = leftEdge + calculateSpacing(fifthInterval) + keyCenter - 17.5
+    // Calculate positions for all intervals in the chord
+    const positions = intervals.map(interval => {
+      return leftEdge + calculateSpacing(interval) + keyCenter - 17.5
+    })
     
-    return [rootPosition, thirdPosition, fifthPosition]
+    return positions
   }, [selectedChord])
 
 
@@ -160,6 +227,16 @@ export const ChordCompass: React.FC = () => {
 
   const handleChordSelect = (chord: keyof typeof CHORD_FORMULAS) => {
     setSelectedChord(chord)
+  }
+
+  const handleDropdownSelect = (chord: keyof typeof CHORD_FORMULAS) => {
+    setDropdownSelection(chord)
+    setSelectedChord(chord) // Immediately apply the chord to the piano
+    setShowDropdown(false)
+  }
+
+  const handleDropdownToggle = () => {
+    setShowDropdown(!showDropdown)
   }
 
   const handlePianoSlide = (direction: 'left' | 'right') => {
@@ -238,25 +315,56 @@ export const ChordCompass: React.FC = () => {
             <View style={styles.labelsRow}>
               <View style={styles.intervalLabel}>
                 <Text style={styles.intervalLabelText}>ROOT</Text>
-                <View style={[styles.noteLabel, { backgroundColor: "#333" }]}>
+                <View style={[styles.noteLabel, { backgroundColor: INTERVAL_COLORS.root }]}>
                   <Text style={styles.noteLabelText}>{chordNotes[0]}</Text>
                 </View>
               </View>
               <View style={styles.intervalLabel}>
-                <Text style={styles.intervalLabelText}>{selectedChord === "minor" ? "m3" : "3rd"}</Text>
+                <Text style={styles.intervalLabelText}>
+                  {selectedChord === "minor" || selectedChord === "diminished" || selectedChord === "minor7" || selectedChord === "halfDiminished7" || selectedChord === "diminished7" ? "m3" : 
+                   selectedChord === "suspended2" ? "2nd" : 
+                   selectedChord === "suspended4" ? "4th" : "3rd"}
+                </Text>
                 <View style={[
                   styles.noteLabel, 
-                  { backgroundColor: selectedChord === "minor" ? "#2196F3" : "#666" }
+                  { backgroundColor: selectedChord === "minor" || selectedChord === "diminished" || selectedChord === "minor7" || selectedChord === "halfDiminished7" || selectedChord === "diminished7" ? INTERVAL_COLORS.minorThird : 
+                                    selectedChord === "suspended2" || selectedChord === "suspended4" ? INTERVAL_COLORS.majorSecond : 
+                                    INTERVAL_COLORS.majorThird }
                 ]}>
                   <Text style={styles.noteLabelText}>{chordNotes[1]}</Text>
                 </View>
               </View>
               <View style={styles.intervalLabel}>
-                <Text style={styles.intervalLabelText}>5th</Text>
-                <View style={[styles.noteLabel, { backgroundColor: "#666" }]}>
+                <Text style={styles.intervalLabelText}>
+                  {selectedChord === "diminished" || selectedChord === "halfDiminished7" || selectedChord === "diminished7" ? "♭5" : 
+                   selectedChord === "augmented" || selectedChord === "augmented7" ? "♯5" : "5th"}
+                </Text>
+                <View style={[
+                  styles.noteLabel, 
+                  { backgroundColor: selectedChord === "diminished" || selectedChord === "halfDiminished7" || selectedChord === "diminished7" ? INTERVAL_COLORS.diminishedFifth : 
+                                    selectedChord === "augmented" || selectedChord === "augmented7" ? INTERVAL_COLORS.augmentedFifth : 
+                                    INTERVAL_COLORS.perfectFifth }
+                ]}>
                   <Text style={styles.noteLabelText}>{chordNotes[2]}</Text>
                 </View>
               </View>
+              {/* Fourth interval for 4-note chords */}
+              {chordNotes.length > 3 && (
+                <View style={styles.intervalLabel}>
+                  <Text style={styles.intervalLabelText}>
+                    {selectedChord === "diminished7" ? "♭7" : 
+                     selectedChord === "major7" ? "♯7" : "7th"}
+                  </Text>
+                  <View style={[
+                    styles.noteLabel, 
+                    { backgroundColor: selectedChord === "diminished7" ? INTERVAL_COLORS.diminishedSeventh : 
+                                      selectedChord === "major7" ? INTERVAL_COLORS.majorSeventh : 
+                                      INTERVAL_COLORS.minorSeventh }
+                  ]}>
+                    <Text style={styles.noteLabelText}>{chordNotes[3]}</Text>
+                  </View>
+                </View>
+              )}
             </View>
             
             <Pressable onPress={() => handlePianoSlide('right')} style={styles.navArrow}>
@@ -272,15 +380,17 @@ export const ChordCompass: React.FC = () => {
               <View style={[
                 styles.highlightBar, 
                 { 
-                  backgroundColor: "#333",
+                  backgroundColor: INTERVAL_COLORS.root,
                   left: indicatorPositions[0] || screenWidth / 2,
                 }
               ]} />
-              {/* Third note highlight */}
+              {/* Second/Third note highlight */}
               <View style={[
                 styles.highlightBar, 
                 { 
-                  backgroundColor: selectedChord === "minor" ? "#2196F3" : "#666",
+                  backgroundColor: selectedChord === "minor" || selectedChord === "diminished" || selectedChord === "minor7" || selectedChord === "halfDiminished7" || selectedChord === "diminished7" ? INTERVAL_COLORS.minorThird : 
+                                    selectedChord === "suspended2" || selectedChord === "suspended4" ? INTERVAL_COLORS.majorSecond : 
+                                    INTERVAL_COLORS.majorThird,
                   left: indicatorPositions[1] || screenWidth / 2,
                 }
               ]} />
@@ -288,10 +398,24 @@ export const ChordCompass: React.FC = () => {
               <View style={[
                 styles.highlightBar, 
                 { 
-                  backgroundColor: "#666",
+                  backgroundColor: selectedChord === "diminished" || selectedChord === "halfDiminished7" || selectedChord === "diminished7" ? INTERVAL_COLORS.diminishedFifth : 
+                                  selectedChord === "augmented" || selectedChord === "augmented7" ? INTERVAL_COLORS.augmentedFifth : 
+                                  INTERVAL_COLORS.perfectFifth,
                   left: indicatorPositions[2] || screenWidth / 2,
                 }
               ]} />
+              {/* Seventh note highlight for 4-note chords */}
+              {chordNotes.length > 3 && (
+                <View style={[
+                  styles.highlightBar, 
+                  { 
+                    backgroundColor: selectedChord === "diminished7" ? INTERVAL_COLORS.diminishedSeventh : 
+                                    selectedChord === "major7" ? INTERVAL_COLORS.majorSeventh : 
+                                    INTERVAL_COLORS.minorSeventh,
+                    left: indicatorPositions[3] || screenWidth / 2,
+                  }
+                ]} />
+              )}
             </View>
             
             {/* Sliding Piano Keyboard */}
@@ -319,27 +443,49 @@ export const ChordCompass: React.FC = () => {
               {/* Root indicator */}
               <View style={[
                 styles.sliderIndicator, 
-                styles.rootIndicator,
-                { left: indicatorPositions[0] - 10 } // Center the 20px indicator
+                { 
+                  backgroundColor: INTERVAL_COLORS.root,
+                  left: indicatorPositions[0] - 10 // Center the 20px indicator
+                }
               ]}>
                 <Text style={styles.sliderIndicatorText}>1</Text>
               </View>
               {/* Third indicator */}
               <View style={[
                 styles.sliderIndicator, 
-                selectedChord === "minor" ? styles.minorThirdIndicator : styles.intervalIndicator,
-                { left: indicatorPositions[1] - 10 } // Center the 20px indicator
+                { 
+                  backgroundColor: selectedChord === "minor" || selectedChord === "diminished" ? INTERVAL_COLORS.minorThird : INTERVAL_COLORS.majorThird,
+                  left: indicatorPositions[1] - 10 // Center the 20px indicator
+                }
               ]}>
                 <Text style={styles.sliderIndicatorText}>3</Text>
               </View>
               {/* Fifth indicator */}
               <View style={[
                 styles.sliderIndicator, 
-                styles.intervalIndicator,
-                { left: indicatorPositions[2] - 10 } // Center the 20px indicator
+                { 
+                  backgroundColor: selectedChord === "diminished" || selectedChord === "halfDiminished7" || selectedChord === "diminished7" ? INTERVAL_COLORS.diminishedFifth : 
+                                  selectedChord === "augmented" || selectedChord === "augmented7" ? INTERVAL_COLORS.augmentedFifth : 
+                                  INTERVAL_COLORS.perfectFifth,
+                  left: indicatorPositions[2] - 10 // Center the 20px indicator
+                }
               ]}>
                 <Text style={styles.sliderIndicatorText}>5</Text>
               </View>
+              {/* Seventh indicator for 4-note chords */}
+              {chordNotes.length > 3 && (
+                <View style={[
+                  styles.sliderIndicator, 
+                  { 
+                    backgroundColor: selectedChord === "diminished7" ? INTERVAL_COLORS.diminishedSeventh : 
+                                    selectedChord === "major7" ? INTERVAL_COLORS.majorSeventh : 
+                                    INTERVAL_COLORS.minorSeventh,
+                    left: indicatorPositions[3] - 10 // Center the 20px indicator
+                  }
+                ]}>
+                  <Text style={styles.sliderIndicatorText}>7</Text>
+                </View>
+              )}
             </View>
           </View>
         </View>
@@ -350,53 +496,181 @@ export const ChordCompass: React.FC = () => {
           
           {/* Chord Type Buttons - Stacked Vertically */}
           <View style={styles.chordTypeContainer}>
-            {Object.entries(CHORD_FORMULAS).map(([key, chord]) => (
-              <View key={key} style={styles.chordTypeRow}>
-                <Text style={styles.chordTypeLabel}>{chord.name}</Text>
-                <Pressable
-                  style={[
-                    styles.chordTypeButton,
-                    selectedChord === key && styles.selectedChordTypeButton
-                  ]}
-                  onPress={() => handleChordSelect(key as keyof typeof CHORD_FORMULAS)}
-                >
-                  <View style={styles.intervalButtons}>
-                    {chord.intervals.map((interval, index) => {
-                      const isActive = selectedChord === key && index < 3
-                      const isMinorThird = interval === 3 && chord.name === "Minor"
-                      
-                      return (
-                        <View
+            {/* Major Chord - Always visible */}
+            <View style={styles.chordTypeRow}>
+              <Text style={styles.chordTypeLabel}>Major</Text>
+              <Pressable
+                style={[
+                  styles.chordTypeButton,
+                  selectedChord === "major" && styles.selectedChordTypeButton
+                ]}
+                onPress={() => handleChordSelect("major")}
+              >
+                <View style={styles.intervalButtons}>
+                  {CHORD_FORMULAS.major.intervals.map((interval, index) => {
+                    const isActive = selectedChord === "major" && index < 3
+                    
+                    return (
+                      <View
+                        key={index}
+                        style={[
+                          styles.intervalButton,
+                          isActive ? styles.activeIntervalButton : styles.inactiveIntervalButton,
+                        ]}
+                      >
+                        <Text style={[
+                          styles.intervalButtonText,
+                          isActive ? styles.activeIntervalButtonText : styles.inactiveIntervalButtonText
+                        ]}>
+                          {interval === 0 ? "1" : interval === 4 ? "3" : interval === 7 ? "5" : interval.toString()}
+                        </Text>
+                      </View>
+                    )
+                  })}
+                </View>
+              </Pressable>
+            </View>
+
+            {/* Minor/Diminished/Augmented Chord - Changes based on dropdown */}
+            <View style={styles.chordTypeRow}>
+              <Text style={styles.chordTypeLabel}>
+                {dropdownSelection ? CHORD_FORMULAS[dropdownSelection].name : "Minor"}
+              </Text>
+              <Pressable
+                style={[
+                  styles.chordTypeButton,
+                  (selectedChord === "minor" || selectedChord === dropdownSelection) && styles.selectedChordTypeButton
+                ]}
+                onPress={() => handleChordSelect(dropdownSelection || "minor")}
+              >
+                                  <View style={styles.intervalButtons}>
+                    {(dropdownSelection ? CHORD_FORMULAS[dropdownSelection] : CHORD_FORMULAS.minor).intervals.map((interval, index) => {
+                      const isActive = (selectedChord === "minor" || selectedChord === dropdownSelection) && index < (dropdownSelection ? CHORD_FORMULAS[dropdownSelection].intervals.length : 3)
+                      const isMinorThird = interval === 3
+                      const isDiminishedFifth = interval === 6
+                      const isAugmentedFifth = interval === 8
+                      const isMinorSeventh = interval === 10
+                      const isMajorSeventh = interval === 11
+                      const isDiminishedSeventh = interval === 9
+                    
+                    return (
+                                              <View
                           key={index}
                           style={[
                             styles.intervalButton,
                             isActive ? styles.activeIntervalButton : styles.inactiveIntervalButton,
-                            isMinorThird && styles.minorThirdButton
+                            isActive && interval === 3 && styles.minorThirdButton,
+                            isActive && interval === 6 && styles.diminishedButton,
+                            isActive && interval === 8 && styles.augmentedButton,
+                            isActive && interval === 9 && styles.diminishedButton,
+                            isActive && interval === 10 && styles.minorSeventhButton,
+                            isActive && interval === 11 && styles.majorSeventhButton
                           ]}
                         >
-                          <Text style={[
-                            styles.intervalButtonText,
-                            isActive ? styles.activeIntervalButtonText : styles.inactiveIntervalButtonText
-                          ]}>
-                            {interval === 0 ? "1" : interval === 4 ? "3" : interval === 7 ? "5" : interval.toString()}
-                          </Text>
-                          {isMinorThird && (
-                            <Text style={styles.flatSymbol}>♭</Text>
-                          )}
-                        </View>
-                      )
-                    })}
-                  </View>
-                </Pressable>
-              </View>
-            ))}
+                        <Text style={[
+                          styles.intervalButtonText,
+                          isActive ? styles.activeIntervalButtonText : styles.inactiveIntervalButtonText
+                        ]}>
+                          {interval === 0 ? "1" : 
+                           interval === 2 ? "2" : 
+                           interval === 3 ? "♭3" : 
+                           interval === 4 ? "3" : 
+                           interval === 5 ? "4" : 
+                           interval === 6 ? "♭5" : 
+                           interval === 7 ? "5" : 
+                           interval === 8 ? "♯5" : 
+                           interval === 9 ? "♭7" : 
+                           interval === 10 ? "7" : 
+                           interval === 11 ? "♯7" : 
+                           interval.toString()}
+                        </Text>
+                      </View>
+                    )
+                  })}
+                </View>
+              </Pressable>
+            </View>
           </View>
 
           {/* Dropdown Button */}
-          <Pressable style={styles.dropdownButton}>
-            <Text style={styles.dropdownButtonText}>Select chord type</Text>
-            <Text style={styles.dropdownArrow}>▼</Text>
+          <Pressable style={styles.dropdownButton} onPress={handleDropdownToggle}>
+            <Text style={styles.dropdownButtonText}>
+              {dropdownSelection ? CHORD_FORMULAS[dropdownSelection].name : "Select chord type"}
+            </Text>
+            <Text style={styles.dropdownArrow}>{showDropdown ? "▲" : "▼"}</Text>
           </Pressable>
+
+          {/* Dropdown Menu */}
+          {showDropdown && (
+            <View style={styles.dropdownMenu}>
+              <Pressable 
+                style={styles.dropdownItem} 
+                onPress={() => handleDropdownSelect("minor")}
+              >
+                <Text style={styles.dropdownItemText}>Minor</Text>
+              </Pressable>
+              <Pressable 
+                style={styles.dropdownItem} 
+                onPress={() => handleDropdownSelect("diminished")}
+              >
+                <Text style={styles.dropdownItemText}>Diminished</Text>
+              </Pressable>
+              <Pressable 
+                style={styles.dropdownItem} 
+                onPress={() => handleDropdownSelect("augmented")}
+              >
+                <Text style={styles.dropdownItemText}>Augmented</Text>
+              </Pressable>
+              <Pressable 
+                style={styles.dropdownItem} 
+                onPress={() => handleDropdownSelect("dominant7")}
+              >
+                <Text style={styles.dropdownItemText}>Dominant 7th</Text>
+              </Pressable>
+              <Pressable 
+                style={styles.dropdownItem} 
+                onPress={() => handleDropdownSelect("minor7")}
+              >
+                <Text style={styles.dropdownItemText}>Minor 7th</Text>
+              </Pressable>
+              <Pressable 
+                style={styles.dropdownItem} 
+                onPress={() => handleDropdownSelect("augmented7")}
+              >
+                <Text style={styles.dropdownItemText}>Augmented 7th</Text>
+              </Pressable>
+              <Pressable 
+                style={styles.dropdownItem} 
+                onPress={() => handleDropdownSelect("halfDiminished7")}
+              >
+                <Text style={styles.dropdownItemText}>Half Diminished 7th</Text>
+              </Pressable>
+              <Pressable 
+                style={styles.dropdownItem} 
+                onPress={() => handleDropdownSelect("diminished7")}
+              >
+                <Text style={styles.dropdownItemText}>Diminished 7th</Text>
+              </Pressable>
+              <Pressable 
+                style={styles.dropdownItem} 
+                onPress={() => handleDropdownSelect("major7")}
+              >
+                <Text style={styles.dropdownItemText}>Major 7th</Text>
+              </Pressable>
+              <Pressable 
+                style={styles.dropdownItem} 
+                onPress={() => handleDropdownSelect("suspended2")}
+              >
+                <Text style={styles.dropdownItemText}>Suspended 2nd</Text>
+              </Pressable>
+              <Pressable 
+                style={styles.dropdownItem} 
+                onPress={() => handleDropdownSelect("suspended4")}
+              >
+                <Text style={styles.dropdownItemText}>Suspended 4th</Text>
+              </Pressable>
+            </View>
+          )}
         </View>
       </View>
     </View>
@@ -640,9 +914,37 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   minorThirdButton: {
-    backgroundColor: "#2196F3",
+    backgroundColor: INTERVAL_COLORS.minorThird,
+  },
+  diminishedButton: {
+    backgroundColor: INTERVAL_COLORS.diminishedFifth,
+  },
+  augmentedButton: {
+    backgroundColor: INTERVAL_COLORS.augmentedFifth,
+  },
+  minorSeventhButton: {
+    backgroundColor: INTERVAL_COLORS.minorSeventh,
+  },
+  majorSeventhButton: {
+    backgroundColor: INTERVAL_COLORS.majorSeventh,
   },
   flatSymbol: {
+    position: "absolute",
+    right: -8,
+    top: -2,
+    fontSize: 8,
+    color: "#000",
+    fontWeight: "600",
+  },
+  diminishedSymbol: {
+    position: "absolute",
+    right: -8,
+    top: -2,
+    fontSize: 8,
+    color: "#000",
+    fontWeight: "600",
+  },
+  augmentedSymbol: {
     position: "absolute",
     right: -8,
     top: -2,
@@ -658,6 +960,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     gap: 8,
+    marginTop: 20,
   },
   dropdownButtonText: {
     color: "#000",
@@ -667,5 +970,27 @@ const styles = StyleSheet.create({
   dropdownArrow: {
     color: "#000",
     fontSize: 12,
+  },
+  dropdownMenu: {
+    position: "absolute",
+    bottom: 50,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    zIndex: 10,
+  },
+  dropdownItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  dropdownItemText: {
+    color: "#000",
+    fontSize: 14,
+    fontWeight: "600",
   },
 }) 
