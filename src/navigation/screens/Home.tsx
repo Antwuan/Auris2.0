@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { View, Text, Pressable, StyleSheet } from "react-native"
+import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
 import Colors from "@/Colors"
@@ -7,22 +7,18 @@ import Colors from "@/Colors"
 export function Home() {
   const navigation = useNavigation()
   const [activeTab, setActiveTab] = useState("home")
-
-  const handleTonusVivoPress = () => {
-    navigation.navigate("Tuneo" as never)
-  }
+  const [activeSection, setActiveSection] = useState<string | null>(null)
 
   const handleTabPress = (tabName: string) => {
     setActiveTab(tabName)
     
     // Handle navigation for different tabs
     switch (tabName) {
-      case "tuner":
+      case "tonusVivo":
         navigation.navigate("Tuneo" as never)
         break
-      case "metronome":
-        // TODO: Navigate to metronome screen
-        // Metronome functionality coming soon
+      case "chords":
+        navigation.navigate("MusicTheory" as never)
         break
       case "lessons":
         navigation.navigate("Lessons" as never)
@@ -33,6 +29,10 @@ export function Home() {
     }
   }
 
+  const handleSectionPress = (section: string) => {
+    setActiveSection(activeSection === section ? null : section)
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -40,22 +40,142 @@ export function Home() {
         <Text style={styles.subtitle}>Your Music Companion</Text>
       </View>
       
-      <View style={styles.content}>
-        <Pressable style={styles.card} onPress={handleTonusVivoPress}>
-          <View style={styles.cardContent}>
-            <View style={styles.cardIcon}>
-              <Ionicons name="musical-note" size={40} color={Colors.primary} />
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Welcome Section */}
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeTitle}>Welcome to Music Theory</Text>
+          <Text style={styles.welcomeDescription}>
+            Learn the fundamentals of music theory and discover essential concepts to enhance your musical journey.
+          </Text>
+        </View>
+
+        {/* Music Theory Basics */}
+        <View style={styles.section}>
+          <Pressable
+            style={styles.sectionHeader}
+            onPress={() => handleSectionPress("basics")}
+          >
+            <View style={styles.sectionHeaderContent}>
+              <View style={styles.sectionIcon}>
+                <Ionicons name="book" size={24} color={Colors.primary} />
+              </View>
+              <View style={styles.sectionText}>
+                <Text style={styles.sectionTitle}>Theory Basics</Text>
+                <Text style={styles.sectionDescription}>
+                  Fundamental music theory concepts and terminology
+                </Text>
+              </View>
             </View>
-            <View style={styles.cardText}>
-              <Text style={styles.cardTitle}>Tonus Vivo</Text>
-              <Text style={styles.cardDescription}>Precision tuning for your instruments</Text>
+            <Ionicons 
+              name={activeSection === "basics" ? "chevron-up" : "chevron-down"} 
+              size={20} 
+              color={Colors.secondary} 
+            />
+          </Pressable>
+          
+          {activeSection === "basics" && (
+            <View style={styles.sectionContent}>
+              <View style={styles.basicsContainer}>
+                <View style={styles.basicItem}>
+                  <Text style={styles.basicTitle}>Intervals</Text>
+                  <Text style={styles.basicDescription}>
+                    The distance between two notes. Understanding intervals is crucial for building chords and melodies.
+                  </Text>
+                </View>
+                
+                <View style={styles.basicItem}>
+                  <Text style={styles.basicTitle}>Scales</Text>
+                  <Text style={styles.basicDescription}>
+                    A series of notes in ascending or descending order. The major and minor scales are the foundation of Western music.
+                  </Text>
+                </View>
+                
+                <View style={styles.basicItem}>
+                  <Text style={styles.basicTitle}>Keys</Text>
+                  <Text style={styles.basicDescription}>
+                    A group of pitches that form the basis of a musical composition. Each key has its own set of sharps or flats.
+                  </Text>
+                </View>
+                
+                <View style={styles.basicItem}>
+                  <Text style={styles.basicTitle}>Time Signatures</Text>
+                  <Text style={styles.basicDescription}>
+                    Indicates how many beats are in each measure and which note value constitutes one beat.
+                  </Text>
+                </View>
+              </View>
             </View>
-            <View style={styles.cardArrow}>
-              <Ionicons name="chevron-forward" size={24} color={Colors.secondary} />
+          )}
+        </View>
+
+        {/* Practice Tips */}
+        <View style={styles.section}>
+          <Pressable
+            style={styles.sectionHeader}
+            onPress={() => handleSectionPress("tips")}
+          >
+            <View style={styles.sectionHeaderContent}>
+              <View style={styles.sectionIcon}>
+                <Ionicons name="bulb" size={24} color={Colors.primary} />
+              </View>
+              <View style={styles.sectionText}>
+                <Text style={styles.sectionTitle}>Practice Tips</Text>
+                <Text style={styles.sectionDescription}>
+                  Effective strategies for learning and applying music theory
+                </Text>
+              </View>
             </View>
-          </View>
-        </Pressable>
-      </View>
+            <Ionicons 
+              name={activeSection === "tips" ? "chevron-up" : "chevron-down"} 
+              size={20} 
+              color={Colors.secondary} 
+            />
+          </Pressable>
+          
+          {activeSection === "tips" && (
+            <View style={styles.sectionContent}>
+              <View style={styles.tipsContainer}>
+                <View style={styles.tipItem}>
+                  <Ionicons name="checkmark-circle" size={20} color={Colors.primary} />
+                  <Text style={styles.tipText}>
+                    Start with basic intervals and gradually build to more complex concepts
+                  </Text>
+                </View>
+                
+                <View style={styles.tipItem}>
+                  <Ionicons name="checkmark-circle" size={20} color={Colors.primary} />
+                  <Text style={styles.tipText}>
+                    Practice identifying chords and progressions in your favorite songs
+                  </Text>
+                </View>
+                
+                <View style={styles.tipItem}>
+                  <Ionicons name="checkmark-circle" size={20} color={Colors.primary} />
+                  <Text style={styles.tipText}>
+                    Use the Circle of Fifths to understand key relationships
+                  </Text>
+                </View>
+                
+                <View style={styles.tipItem}>
+                  <Ionicons name="checkmark-circle" size={20} color={Colors.primary} />
+                  <Text style={styles.tipText}>
+                    Experiment with different chord voicings and inversions
+                  </Text>
+                </View>
+                
+                <View style={styles.tipItem}>
+                  <Ionicons name="checkmark-circle" size={20} color={Colors.primary} />
+                  <Text style={styles.tipText}>
+                    Apply theory concepts to your own compositions and improvisations
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
+        </View>
+
+
+      </ScrollView>
       
       {/* Floating Navigation Bar */}
       <View style={styles.floatingNav}>
@@ -74,30 +194,30 @@ export function Home() {
         </Pressable>
         
         <Pressable
-          style={[styles.navItem, activeTab === "tuner" && styles.navItemActive]}
-          onPress={() => handleTabPress("tuner")}
+          style={[styles.navItem, activeTab === "tonusVivo" && styles.navItemActive]}
+          onPress={() => handleTabPress("tonusVivo")}
         >
           <Ionicons 
             name="musical-note" 
             size={24} 
-            color={activeTab === "tuner" ? Colors.primary : Colors.secondary} 
+            color={activeTab === "tonusVivo" ? Colors.primary : Colors.secondary} 
           />
-          <Text style={[styles.navLabel, activeTab === "tuner" && styles.navLabelActive]}>
-            Tuner
+          <Text style={[styles.navLabel, activeTab === "tonusVivo" && styles.navLabelActive]}>
+            Tonus Vivo
           </Text>
         </Pressable>
         
         <Pressable
-          style={[styles.navItem, activeTab === "metronome" && styles.navItemActive]}
-          onPress={() => handleTabPress("metronome")}
+          style={[styles.navItem, activeTab === "chords" && styles.navItemActive]}
+          onPress={() => handleTabPress("chords")}
         >
           <Ionicons 
-            name="timer" 
+            name="compass" 
             size={24} 
-            color={activeTab === "metronome" ? Colors.primary : Colors.secondary} 
+            color={activeTab === "chords" ? Colors.primary : Colors.secondary} 
           />
-          <Text style={[styles.navLabel, activeTab === "metronome" && styles.navLabelActive]}>
-            Metronome
+          <Text style={[styles.navLabel, activeTab === "chords" && styles.navLabelActive]}>
+            Chords
           </Text>
         </Pressable>
         
@@ -127,7 +247,7 @@ const styles = StyleSheet.create({
   header: {
     paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 20,
     alignItems: "center",
   },
   title: {
@@ -145,51 +265,106 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 120, // Add padding to avoid floating nav
   },
-  card: {
-    backgroundColor: Colors.bgActive,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: Colors.secondary,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  welcomeSection: {
+    paddingVertical: 20,
+    alignItems: "center",
   },
-  cardContent: {
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: Colors.primary,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  welcomeDescription: {
+    fontSize: 14,
+    color: Colors.secondary,
+    textAlign: "center",
+    lineHeight: 20,
+    maxWidth: 300,
+  },
+  section: {
+    marginBottom: 16,
+  },
+  sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: Colors.bgActive,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
   },
-  cardIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: Colors.bgInactive,
-    justifyContent: "center",
+  sectionHeaderContent: {
+    flexDirection: "row",
     alignItems: "center",
-    marginRight: 16,
-  },
-  cardText: {
     flex: 1,
   },
-  cardTitle: {
-    fontSize: 20,
+  sectionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(58, 58, 58, 0.8)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  sectionText: {
+    flex: 1,
+  },
+  sectionTitle: {
+    fontSize: 16,
     fontWeight: "600",
     color: Colors.primary,
     marginBottom: 4,
   },
-  cardDescription: {
-    fontSize: 14,
+  sectionDescription: {
+    fontSize: 12,
     color: Colors.secondary,
   },
-  cardArrow: {
-    marginLeft: 8,
+  sectionContent: {
+    backgroundColor: Colors.bgActive,
+    borderRadius: 12,
+    marginTop: 8,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
   },
+  basicsContainer: {
+    gap: 16,
+  },
+  basicItem: {
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
+  },
+  basicTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: Colors.primary,
+    marginBottom: 6,
+  },
+  basicDescription: {
+    fontSize: 12,
+    color: Colors.secondary,
+    lineHeight: 18,
+  },
+  tipsContainer: {
+    gap: 12,
+  },
+  tipItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  tipText: {
+    fontSize: 12,
+    color: Colors.secondary,
+    lineHeight: 18,
+    flex: 1,
+  },
+
   floatingNav: {
     position: "absolute",
     bottom: 30,

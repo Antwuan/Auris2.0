@@ -13,6 +13,13 @@ export interface Translation {
   error_mic_access: string
   configure_permissions: string
   select_tuning: string
+  chord_compass: string
+  key_selection: string
+  chord_types: string
+  current_chord: string
+  circle_of_fifths: string
+  formula: string
+  notes: string
 }
 
 export const en: Translation = {
@@ -30,6 +37,13 @@ export const en: Translation = {
   error_mic_access: "Tuneo requires microphone permissions to hear your guitar.",
   configure_permissions: "Configure permissions",
   select_tuning: "Select Tuning",
+  chord_compass: "Chord Compass",
+  key_selection: "Key Selection",
+  chord_types: "Chord Types",
+  current_chord: "Current Chord",
+  circle_of_fifths: "Circle of Fifths",
+  formula: "Formula",
+  notes: "Notes",
 }
 
 export const es: Translation = {
@@ -47,4 +61,11 @@ export const es: Translation = {
   error_mic_access: "Tuneo necesita permiso de micrófono para escuchar la guitarra.",
   configure_permissions: "Configurar permisos",
   select_tuning: "Seleccionar Afinación",
+  chord_compass: "Compás de Acordes",
+  key_selection: "Selección de Tonalidad",
+  chord_types: "Tipos de Acordes",
+  current_chord: "Acorde Actual",
+  circle_of_fifths: "Círculo de Quintas",
+  formula: "Fórmula",
+  notes: "Notas",
 }
