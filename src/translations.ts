@@ -5,6 +5,7 @@ export interface Translation {
   mode: string
   gtr_string: string
   reference: string
+  tuning: string
   no_tone: string
   reference_a4: string
   tuning_440: string
@@ -29,6 +30,7 @@ export const en: Translation = {
   mode: "Mode",
   gtr_string: "STRING",
   reference: "REFERENCE",
+  tuning: "TUNING",
   no_tone: "No tone",
   reference_a4: "Reference (A4)",
   tuning_440: "440Hz (standard)",
@@ -53,6 +55,7 @@ export const es: Translation = {
   mode: "Modo",
   gtr_string: "CUERDA",
   reference: "REFERENCIA",
+  tuning: "AFINACIÓN",
   no_tone: "Sin tono",
   reference_a4: "Referencia (A4)",
   tuning_440: "440Hz (estándar)",

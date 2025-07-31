@@ -4,14 +4,15 @@ import { useEffect, useMemo, useState } from "react"
 import { useWindowDimensions } from "react-native"
 import { Skia } from "@shopify/react-native-skia"
 import { cancelAnimation, useSharedValue, withTiming } from "react-native-reanimated"
+import { PERFORMANCE_CONFIG } from "@/config/performance"
 
 const MAX_WAVEFORM_GAIN = 10
-const WAVEFORM_SUBSAMPLE = 12
-const MIN_SUBSAMPLE_SIZE = 10
+const WAVEFORM_SUBSAMPLE = PERFORMANCE_CONFIG.WAVEFORM_SUBSAMPLE
+const MIN_SUBSAMPLE_SIZE = PERFORMANCE_CONFIG.WAVEFORM_MIN_SUBSAMPLE_SIZE
 const PLACEHOLDER_PATH1 = Skia.Path.MakeFromSVGString("M 0 0 L 0 0 Z")!
 const PLACEHOLDER_PATH2 = Skia.Path.MakeFromSVGString("M 0 0 L 0 0 Z")!
 
-const REFRESH_FRAMES = 1
+const REFRESH_FRAMES = PERFORMANCE_CONFIG.WAVEFORM_REFRESH_FRAMES
 
 export const Waveform = ({
   audioBuffer,
@@ -31,7 +32,7 @@ export const Waveform = ({
   // Only refresh alignedAudio once every REFRESH_FRAMES
   const refresh = useMemo(() => Math.floor(bufferId / REFRESH_FRAMES), [bufferId])
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const alignedAudio = useMemo(() => getAlignedAudio(audioBuffer, 2048), [refresh])
+  const alignedAudio = useMemo(() => getAlignedAudio(audioBuffer, PERFORMANCE_CONFIG.WAVEFORM_MAX_SIZE), [refresh])
 
   const [waveform1, setWaveform1] = useState<SkPath>()
   const [waveform2, setWaveform2] = useState<SkPath>()

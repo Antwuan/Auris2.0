@@ -1,7 +1,7 @@
 import AVFoundation
 import ExpoModulesCore
 
-let BUF_PER_SEC = 15
+let BUF_PER_SEC = 10 // Reduced from 15 to 10 for better performance
 
 public class MicrophoneStreamModule: Module {
 

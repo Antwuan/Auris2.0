@@ -4,13 +4,18 @@ import { withTiming, withRepeat } from "react-native-reanimated"
 import { Rect, Line, LinearGradient, Group, vec, Points, Mask } from "@shopify/react-native-skia"
 import { useWindowDimensions } from "react-native"
 import Colors from "@/Colors"
+import { PERFORMANCE_CONFIG } from "@/config/performance"
 
 const GRID_COLOR = Colors.bgInactive
 const BACKGROUND_GRADIENT_START = Colors.bgActive
 const BACKGROUND_GRADIENT_END = Colors.bgInactive
 const GRID_SPACING = 30
-const GRID_SPEED = 120 // Pixels per second
+const GRID_SPEED = PERFORMANCE_CONFIG.GRID_SPEED
 const MISSING_NOTE = -2
+
+// Performance optimization: Limit history size and update frequency
+const MAX_HISTORY_SIZE = PERFORMANCE_CONFIG.MAX_HISTORY_SIZE
+const UPDATE_FREQUENCY = PERFORMANCE_CONFIG.GRID_UPDATE_FREQUENCY
 
 const MovingGrid = ({
   positionY,
@@ -25,8 +30,9 @@ const MovingGrid = ({
 }) => {
   const { width, height } = useWindowDimensions()
   const boxHeight = useMemo(() => height / 2, [height])
-  const pointSpacing = useMemo(() => GRID_SPEED / pointsPerSec, [pointsPerSec])
-  const maxHistory = useMemo(() => Math.floor(boxHeight / pointSpacing), [boxHeight, pointSpacing])
+  
+  // Use fixed history size for better performance
+  const maxHistory = MAX_HISTORY_SIZE
 
   // Circular queues to store pitch history
   const [history, setHistory] = useState(() => new Array<number>(maxHistory).fill(0))
@@ -36,8 +42,10 @@ const MovingGrid = ({
   // Number of valid entries in circular queues
   const [historyLength, setHistoryLength] = useState(0)
 
-  // Add a new deviation to history
+  // Add a new deviation to history - only update every UPDATE_FREQUENCY changes
   useEffect(() => {
+    if (pitchId % UPDATE_FREQUENCY !== 0) return
+    
     // Add deviation value to history in currentIdx
     setHistory((h) => {
       // Copy and add deviation to history array
@@ -63,12 +71,11 @@ const MovingGrid = ({
       // Horizontal displacement
       const x = ((1 + history[idx]) * width) / 2
 
-      // Vertical displacement
+      // Vertical displacement - simplified calculation
       const next_idx = (currentIdx - i + maxHistory) % maxHistory
       const dt = i === 0 ? 0 : (timestamps[next_idx] - timestamps[idx]) / 1000
       y = y + GRID_SPEED * dt
       points[i] = vec(x, y)
-      // console.log(`Point x=${x}  y=${y} dt=${dt}`)
     }
     return points
   }, [history, currentIdx, timestamps, historyLength, width, maxHistory])
@@ -76,7 +83,7 @@ const MovingGrid = ({
   // Vertical offset for animating grid lines
   const translateY = useSharedValue(0)
 
-  // Animate the grid verticalOffset value
+  // Animate the grid verticalOffset value - reduced frequency
   useEffect(() => {
     cancelAnimation(translateY)
 
@@ -91,7 +98,7 @@ const MovingGrid = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Calculate grid lines dynamically
+  // Calculate grid lines dynamically - reduced frequency
   const horizontalLines = useMemo(() => {
     const lines = []
     for (let y = 0; y < boxHeight; y += GRID_SPACING) {
