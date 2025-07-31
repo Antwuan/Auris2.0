@@ -22,19 +22,22 @@ import RequireMicAccess from "@/components/RequireMicAccess"
 import { useUiStore } from "@/stores/uiStore"
 import { getRelativeDiff, sameNote } from "@/notes"
 import { RightButtons } from "@/components/RightButtons"
-import { TuningSelector } from "@/components/TuningSelector"
+import { PERFORMANCE_CONFIG } from "@/config/performance"
 
 const TEST_MODE = false
 
 // See python notebook to tweak these params
-const BUF_SIZE = 9000
-const MIN_FREQ = 30
-const MAX_FREQ = 500
-const MAX_PITCH_DEV = 0.2
-const THRESHOLD_DEFAULT = 0.15
-const THRESHOLD_NOISY = 0.6
-const RMS_GAP = 1.1
-const ENABLE_FILTER = true
+const BUF_SIZE = PERFORMANCE_CONFIG.BUFFER_SIZE
+const MIN_FREQ = PERFORMANCE_CONFIG.MIN_FREQ
+const MAX_FREQ = PERFORMANCE_CONFIG.MAX_FREQ
+const MAX_PITCH_DEV = PERFORMANCE_CONFIG.MAX_PITCH_DEV
+const THRESHOLD_DEFAULT = PERFORMANCE_CONFIG.THRESHOLD_DEFAULT
+const THRESHOLD_NOISY = PERFORMANCE_CONFIG.THRESHOLD_NOISY
+const RMS_GAP = PERFORMANCE_CONFIG.RMS_GAP
+const ENABLE_FILTER = PERFORMANCE_CONFIG.ENABLE_FILTER
+
+// Performance optimization: Reduce processing frequency
+const PROCESSING_THROTTLE = PERFORMANCE_CONFIG.PROCESSING_THROTTLE
 
 // This is just a preference, may be set differently
 const BUF_PER_SEC = MicrophoneStreamModule.BUF_PER_SEC
@@ -199,6 +202,10 @@ export const Tuneo = () => {
 
     // Process each bufferId only once
     if (bufferId === idQ[idQ.length - 1]) return
+    
+    // Performance optimization: Only process every PROCESSING_THROTTLE buffers
+    if (bufferId % PROCESSING_THROTTLE !== 0) return
+    
     addId(bufferId)
 
     // Set sampleRate after first audio buffer
@@ -366,7 +373,6 @@ export const Tuneo = () => {
       </Canvas>
       <Strings positionY={waveformY + waveformH} height={stringsH} instrument={instrument} />
       <RightButtons positionY={waveformY + waveformH} instrument={instrument} />
-      <TuningSelector positionY={waveformY + waveformH} height={stringsH} />
     </View>
   ) : micAccess === "denied" ? (
     <RequireMicAccess />

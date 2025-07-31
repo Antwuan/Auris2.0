@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
 import { zustandStorage } from "./localStorage"
+import { PerformanceMode } from "@/config/performance"
 
 export const INSTRUMENT_IDS = ["guitar", "chromatic"] as const
 export const TUNING_IDS = ["ref_440", "ref_432", "ref_444"] as const
@@ -29,10 +30,12 @@ export interface ConfigState {
   guitarTuning: GuitarTuningType
   graphics: "high"
   manual: boolean
+  performanceMode: PerformanceMode
   setInstrument: (instrument: InstrumentType) => void
   setTuning: (tuning: TuningType) => void
   setGuitarTuning: (tuning: GuitarTuningType) => void
   setManual: (manual: boolean) => void
+  setPerformanceMode: (mode: PerformanceMode) => void
 }
 
 /**
@@ -52,11 +55,13 @@ export const useConfigStore = create<ConfigState>()(
       tuning: "ref_440",
       guitarTuning: "standard",
       manual: false,
+      performanceMode: "BALANCED",
 
       setInstrument: (instrument: InstrumentType) => set({ instrument }),
       setTuning: (tuning: TuningType) => set({ tuning }),
       setGuitarTuning: (guitarTuning: GuitarTuningType) => set({ guitarTuning }),
       setManual: (manual) => set({ manual }),
+      setPerformanceMode: (mode: PerformanceMode) => set({ performanceMode: mode }),
     }),
     {
       name: "config-store",

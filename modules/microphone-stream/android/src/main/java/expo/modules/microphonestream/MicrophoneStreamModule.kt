@@ -9,7 +9,7 @@ import expo.modules.kotlin.Promise
 import kotlin.concurrent.thread
 import java.util.concurrent.atomic.AtomicBoolean
 
-val BUF_PER_SEC = 15
+val BUF_PER_SEC = 10 // Reduced from 15 to 10 for better performance
 
 class MicrophoneStreamModule : Module() {
 
